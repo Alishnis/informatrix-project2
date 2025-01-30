@@ -56,13 +56,14 @@
                             </div>
                             <div class="t948__descr t-text t-text_xs" field="li_descr__5917094636332" style="font-size: 130%;">
                                 {% if diagnosis %}
-                                    <p style="font-weight: bold;">Analysis results.</p>
+                                    <p style="font-weight: bold;">Analysis results.dsfs</p>
                                    
                                         <ul style="font-size: 0.9em;">
                                             {% for disease in diagnosis %}
-                                                {% if disease.strip %} <!-- Исключаем пустые строки -->
+                                            
+                                                 <!-- Исключаем пустые строки -->
                                                     <li>{{ disease }}</li>
-                                                {% endif %}
+                                               
                                             {% endfor %}
                                         </ul>
                                 {% endif %}

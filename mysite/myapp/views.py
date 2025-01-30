@@ -114,8 +114,11 @@ def analyze_symptoms(request):
         if symptoms:
             try:
                 # Запускаем скрипт для анализа симптомов
+                import os
+
+                script_path = os.path.join(os.path.dirname(__file__), "ex.py")
                 result = subprocess.check_output(
-                    ['python', 'myapp/ex.py'], 
+                    ['python', script_path], 
                     input=symptoms, 
                     text=True
                 )
@@ -408,7 +411,11 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 # Параметры
-BASE_DIR = '/Users/aliserromankul/Desktop/lessons/hackathon/mysite/data'
+# Параметры
+import os
+from django.conf import settings
+
+BASE_DIR = os.path.join(settings.BASE_DIR, 'data')
 MODEL_PATH = "trained_model.h5"
 IMG_SIZE = (128, 128)
 BATCH_SIZE = 32

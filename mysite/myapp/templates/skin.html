@@ -7,14 +7,20 @@
         <div class="t-section__container t-container t-container_flex" style="margin-bottom:80px;">
             <div class="t-col t-col_12">
                 <div class="t-section__title t-title t-title_xs t-align_center t-margin_auto" field="btitle">
-                    CT scan analysis
+                    Analysis of Skin Images
                 </div>
                 <div class="t-section__descr t-descr t-descr_xl t-align_center t-margin_auto" field="bdescr">
-                    with the help of artificial intelligence
+                    Using AI to Detect Skin Diseases
                 </div>
             </div>
         </div>
         
+        {% if error %}
+        <div style="color: red; border: 1px solid red; padding: 10px; margin-bottom: 20px;">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
         <div class="t-container">
             <div class="t948__row">
                 <div class="t-item t948__col t-col t-col_12">
@@ -24,11 +30,11 @@
                                 <div class="t948__number t-name t-name_md">1</div>
                             </div>
                             <div class="t948__title t-name t-name_md" field="li_title__5917094636332">
-                                <form method="POST" enctype="multipart/form-data">
+                                <form action="{% url 'analyze_skin_image' %}" method="POST" enctype="multipart/form-data" onsubmit="showLoading()">
                                     {% csrf_token %}
-                                    <label for="file">Choose file:</label>
-                                    <input type="file" name="file" id="file" required>
-                                    <button style="display:block; margin-top: 20px;"  type="submit">Analyse:</button>
+                                    <label for="file">Select a skin image:</label>
+                                    <input type="file" id="file" name="file" accept="image/*" required>
+                                    <button type="submit">Analyze</button>
                                 </form>
                             </div>
                         </div>
@@ -44,7 +50,7 @@
 <div id="loading-overlay" style="display: none;">
     <div class="loading-spinner">
         <img src="{% static 'loading.gif' %}" alt="Loading...">
-        <p>Analysing...</p>
+        <p>Analyzing...</p>
     </div>
 </div>
 
@@ -56,11 +62,11 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.5); /* Полупрозрачный фон */
+        background-color: rgba(0, 0, 0, 0.5);
         display: flex;
         justify-content: center;
         align-items: center;
-        z-index: 1000; /* Поверх всего контента */
+        z-index: 1000;
     }
 
     /* Стиль для индикатора загрузки */
@@ -75,37 +81,34 @@
         height: 100px;
         margin-bottom: 20px;
     }
+    
     button {
-            padding: 10px 15px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #fff;
-            background-color: #007bff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
+        padding: 10px 15px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #fff;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
 
-        button:hover {
-            background-color: #0056b3;
-            transform: scale(1.05);
-        }
+    button:hover {
+        background-color: #0056b3;
+        transform: scale(1.05);
+    }
 
-        button:focus {
-            outline: none;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-        }
+    button:focus {
+        outline: none;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
 </style>
 
 <script>
-    // Функция для отображения индикатора загрузки
     function showLoading() {
         document.getElementById('loading-overlay').style.display = 'flex';
     }
 </script>
-    
 
-    
 {% endblock %}
-    
