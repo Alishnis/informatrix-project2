@@ -26,7 +26,8 @@ Follow these steps to set up the project:
 ### **1️⃣ Clone the Repository**
 ```bash
 git clone https://github.com/Alishnis/informatrix-project2.git
-cd informatrix-ai-project
+cd informatrix-project2
+cd mysite
 
 2️⃣ Create a Virtual Environment
 
