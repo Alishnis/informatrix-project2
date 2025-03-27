@@ -17,14 +17,20 @@ urlpatterns = [
     path('upload/',views.analyze_image,name='analyze_image'),
     path('save_results/', views.save_results, name='save_results'),
     path('upload2/', views.analyze_image2, name='analyze_image2'),
-    path("fetch/", views.fetch_disease_data, name="fetch_disease_data"),
+   
     path("skin/",views2.analyze_skin_image,name='analyze_skin_image'),
     path('save_results2/', views2.save_results_skin, name='save_results_skin'),
     path('save_results3/', views.save_results_ct, name='save_results_ct'),
+    path('bloodanalysis/',views.process_blood_analysis_file, name='blood_analysis'),
+    path('get_analysis_details/<int:analysis_id>/', views2.get_analysis_details, name='get_analysis_details'),
+
+    path('blood_analysis_results/<str:parameter>/', views2.show_graph, name='show_graph'),
   
     
     
     
     
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

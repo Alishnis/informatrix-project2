@@ -300,7 +300,7 @@ def analyze_image(request):
     if request.method == 'POST' and 'file' in request.FILES:
         uploaded_file = request.FILES['file']
 
-        # Сохраняем файл временно
+       
         temp_image_path = os.path.join(settings.MEDIA_ROOT, 'temp', uploaded_file.name)
         os.makedirs(os.path.dirname(temp_image_path), exist_ok=True)
         with open(temp_image_path, 'wb+') as destination:
@@ -308,26 +308,26 @@ def analyze_image(request):
                 destination.write(chunk)
 
         try:
-            # Предобработка изображения
+        
             img = Image.open(temp_image_path).convert("RGB").resize((128, 128))
             img_array = np.array(img) / 255.0
             input_tensor = np.expand_dims(img_array, axis=0)  # (1, 128, 128, 3)
 
-            # Выполнение анализа
+            
             predictions = model.predict(input_tensor)
-            probabilities = predictions[0]  # Вероятности для каждого класса
+            probabilities = predictions[0] 
 
-            # Список классов заболеваний
+           
             classes = [
                 "Atelectasis", "Cardiomegaly", "Effusion", "Infiltration", "Mass",
                 "Nodule", "Pneumonia", "Pneumothorax", "Consolidation", "Edema",
                 "Emphysema", "Fibrosis", "Pleural Thickening", "Hernia"
             ]
 
-            # Форматирование результатов
+         
             detected_diseases = [
                 f"{classes[i]}: {prob * 100:.2f}%"
-                for i, prob in enumerate(probabilities) if prob > 0.5  # Порог вероятности 50%
+                for i, prob in enumerate(probabilities) if prob > 0.6  
             ]
             result_text = "\n".join(detected_diseases)
 
@@ -335,23 +335,22 @@ def analyze_image(request):
             gradcam_path = generate_gradcam_keras(
                 model=model,
                 input_tensor=input_tensor,
-                last_conv_layer_name="block5_conv3",  # Укажите последний сверточный слой модели
+                last_conv_layer_name="block5_conv3", 
                 image_path=temp_image_path
             )
 
-            # Сохраняем Grad-CAM изображение как основное
             gradcam_file_path = os.path.join(settings.MEDIA_ROOT, 'uploads/analysis/', os.path.basename(gradcam_path))
             os.makedirs(os.path.dirname(gradcam_file_path), exist_ok=True)
-            os.rename(gradcam_path, gradcam_file_path)  # Перемещаем файл в папку загрузок
+            os.rename(gradcam_path, gradcam_file_path) 
 
-            # Сохраняем запись в базе данных
+        
             analysis = Analysis.objects.create(
                 user=request.user,
-                analysis_file=gradcam_file_path.replace(settings.MEDIA_ROOT, ''),  # Сохраняем относительный путь
+                analysis_file=gradcam_file_path.replace(settings.MEDIA_ROOT, ''),  
                 result=result_text
             )           
 
-            # Удаляем временный исходный файл
+           
             os.remove(temp_image_path)
 
             # Отображаем результат
@@ -565,38 +564,106 @@ def analyze_image2(request):
     return render(request, 'upload2.html')
 
 
+from django.http import JsonResponse
+from django.utils import timezone
+import pdfplumber
+import pytesseract
+import re
+import logging
+from .models import BloodAnalysis
 
-import requests
-from django.shortcuts import render
-from .models import Disease
+def extract_text_from_image(image_path):
+    image = Image.open(image_path)
+    text = pytesseract.image_to_string(image)
+    return text
 
-API_URL = "https://disease-info.p.rapidapi.com/diseases"
-API_HEADERS = {
-    "X-RapidAPI-Key": "a891e945f2msha7985eca0bc5957p1c3ee4jsnc4cd95b357ae",  # Замените на ваш RapidAPI ключ
-    "X-RapidAPI-Host": "disease-info.p.rapidapi.com"
-}
+def extract_text_from_pdf(pdf_path):
+    text = ''
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            text += page.extract_text()
+    return text
 
-def fetch_disease_data(request):
-    """Получить данные о болезнях из RapidAPI"""
-    response = requests.get(API_URL, headers=API_HEADERS)
+def extract_blood_data(text):
+    leukocytes_level = None
+    hemoglobin_level = None
+    erythrocytes_level = None
+    thrombocytes_level = None
+    hematocrit_level = None
 
-    if response.status_code == 200:
-        data = response.json()
+    hemoglobin_match = re.search(r"hemoglobin\s*[:\-]?\s*([\d.]+)", text, re.IGNORECASE)
+    if hemoglobin_match:
+        hemoglobin_level = float(hemoglobin_match.group(1))
 
-        for disease in data:  # Обработка списка заболеваний
-            Disease.objects.update_or_create(
-                name=disease.get("disease", "Unknown"),
-                defaults={
-                    "symptoms": disease.get("symptoms", "N/A"),
-                    "description": disease.get("description", "N/A"),
-                    "treatment": disease.get("treatment", "N/A"),
-                },
-            )
+    leukocytes_match = re.search(r"leukocytes?\s*[:\-]?\s*([\d.]+)", text, re.IGNORECASE)
+    if leukocytes_match:
+        leukocytes_level = float(leukocytes_match.group(1))
 
-        return render(request, "fetch_data.html", {"diseases": Disease.objects.all()})
-    else:
-        return render(request, "error.html", {"error": response.json()})
+    erythrocytes_match = re.search(r"erythrocytes?\s*[:\-]?\s*([\d.]+)", text, re.IGNORECASE)
+    if erythrocytes_match:
+        erythrocytes_level = float(erythrocytes_match.group(1))
+
+    thrombocytes_match = re.search(r"thrombocytes?\s*[:\-]?\s*([\d.]+)", text, re.IGNORECASE)
+    if thrombocytes_match:
+        thrombocytes_level = float(thrombocytes_match.group(1))
+
+    hematocrit_match = re.search(r"hematocrit\s*[:\-]?\s*([\d.]+)", text, re.IGNORECASE)
+    if hematocrit_match:
+        hematocrit_level = float(hematocrit_match.group(1))
+
+    return leukocytes_level, hemoglobin_level, erythrocytes_level, thrombocytes_level, hematocrit_level
 
 
 
+def process_blood_analysis_file(request):
+    if request.method == 'POST' and 'file' in request.FILES:
+        uploaded_file = request.FILES['file']
+        file_path = os.path.join(settings.MEDIA_ROOT, 'uploads/analysis', uploaded_file.name)
 
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        try:
+            with open(file_path, 'wb+') as destination:
+                for chunk in uploaded_file.chunks():
+                    destination.write(chunk)
+            logging.info(f"File uploaded successfully: {file_path}")
+        except Exception as e:
+            logging.error(f"Error saving file: {str(e)}")
+            return JsonResponse({'error': f'Error saving file: {str(e)}'}, status=500)
+
+        text = ''
+        try:
+            if uploaded_file.name.endswith('.pdf'):
+                text = extract_text_from_pdf(file_path)
+            elif uploaded_file.name.endswith(('.jpg', '.jpeg', '.png', '.bmp')):
+                text = extract_text_from_image(file_path)
+            logging.info(f"Extracted text: {text[:100]}...")  # Log first 100 characters of extracted text
+        except Exception as e:
+            logging.error(f"Error processing file: {str(e)}")
+            return JsonResponse({'error': f'Error processing file: {str(e)}'}, status=500)
+
+        leukocytes_level, hemoglobin_level, erythrocytes_level, thrombocytes_level, hematocrit_level = extract_blood_data(text)
+
+        analysis_data = {
+            'leukocytes_level': leukocytes_level,
+            'hemoglobin_level': hemoglobin_level,
+            'erythrocytes_level': erythrocytes_level,
+            'thrombocytes_level': thrombocytes_level,
+            'hematocrit_level': hematocrit_level
+        }
+
+        # Сохраняем данные в базе данных
+        BloodAnalysis.objects.create(
+            user=request.user,
+            analysis_file=uploaded_file.name,
+            uploaded_at=timezone.now(),
+            leukocytes_level=leukocytes_level,
+            hemoglobin_level=hemoglobin_level,
+            erythrocytes_level=erythrocytes_level,
+            thrombocytes_level=thrombocytes_level,
+            hematocrit_level=hematocrit_level
+        )
+
+        logging.info(f"Analysis data extracted and saved: {analysis_data}")
+        return render(request, 'upload_analysis.html', {'analysis_data': analysis_data})
+
+    return render(request, 'upload_analysis.html')

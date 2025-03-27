@@ -25,10 +25,10 @@ class AnalysisSkin(models.Model):
     
 class Disease(models.Model):
     name = models.CharField(max_length=200)
-    symptoms=models.TextField()
+    
     
     treatment = models.TextField()
-    description=models.TextField()
+    
     
 
     def __str__(self):
@@ -42,3 +42,19 @@ class CTAnalysis(models.Model):
 
     def __str__(self):
         return f"CT Analysis by {self.user.username} on {self.uploaded_at}"
+
+from django.db import models
+from django.contrib.auth.models import User
+
+class BloodAnalysis(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    analysis_file = models.FileField(upload_to='uploads/analysis/', null=True)
+    leukocytes_level = models.FloatField(null=True, blank=True) 
+    hemoglobin_level = models.FloatField(null=True, blank=True)  
+    erythrocytes_level = models.FloatField(null=True, blank=True)   
+    thrombocytes_level=models.FloatField(null=True,blank=True)
+    hematocrit_level=models.FloatField(null=True, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Blood Analysis by {self.user.username} on {self.uploaded_at}"

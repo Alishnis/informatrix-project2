@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .models import Analysis
+from .models import Analysis,BloodAnalysis
 
 def register_view(request):
     if request.method == 'POST':
@@ -32,7 +32,7 @@ def login_view(request):
     return render(request, 'register.html')
 
 from .models import AnalysisCT, AnalysisSkin, Analysis  # Модели для разных типов анализов
-
+from django.core import serializers
 def user_kab(request):
     """Показать личный кабинет с разным контентом в зависимости от выбранного раздела."""
     selected_section = request.GET.get('section', 'ct')  # Получаем выбранный раздел, по умолчанию "Анализ КТ снимков"
@@ -59,6 +59,16 @@ def user_kab(request):
             'section_title': 'Skin analysis',
             'analyses': analyses,
         })
+    elif selected_section == 'blood':
+        analyses = BloodAnalysis.objects.filter(user=request.user).order_by('-id')
+        analyses_data = list(analyses.values('uploaded_at', 'leukocytes_level', 'hemoglobin_level', 'erythrocytes_level', 'thrombocytes_level', 'hematocrit_level'))
+        
+        
+        
+        
+        return render (request, 'blood_analysis_result.html',{'analyses':analyses_data})
+        
+    
     else:
         context.update({
             'section_title': 'Неизвестный раздел',
