@@ -8,7 +8,7 @@ urlpatterns = [
     path('login/',auth_views.login_view,name='login'),
     path('register/', auth_views.register_view, name='register'),
     path('kab/',auth_views.user_kab,name='user_kab'),
-    
+    path('uploadfila/',views.handle_upload,name="handle_upload"),
     
    
     
