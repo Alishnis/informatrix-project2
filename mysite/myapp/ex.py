@@ -1,9 +1,8 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from googletrans import Translator  # Importing the library for translation
+from googletrans import Translator
 
 def main():
-    print("Welcome to the BioGPT-based symptom analyzer!")
-    print("Enter symptoms separated by commas, for example: 'headache, nausea, fever'.")
+    
 
     symptoms = input("Enter symptoms: ").strip()
 
@@ -14,7 +13,6 @@ def main():
     try:
         translator = Translator()
 
-        # Translating symptoms into English
         symptoms_en = translator.translate(symptoms, src='ru', dest='en').text
 
         print("Loading the model and tokenizer... This might take a few seconds.")
@@ -27,18 +25,15 @@ def main():
         outputs = model.generate(
             **inputs,
             max_length=100,
-            temperature=0.7,  # Creativity balance
-            do_sample=True,   # Enable sampling
-            top_k=50,         # Limit to 50 likely tokens
-            top_p=0.9,        # Nucleus sampling
+            temperature=0.7,
+            do_sample=True,
+            top_k=50,
+            top_p=0.9,
             num_return_sequences=1
         )
 
-        # Decoding the diagnosis in English
         diagnosis_en = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-        # Translating the diagnosis back into Russian
-        
         print(f"\nPossible diagnoses : {diagnosis_en}")
 
     except Exception as e:

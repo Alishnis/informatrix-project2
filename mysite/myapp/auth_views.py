@@ -31,11 +31,11 @@ def login_view(request):
             messages.error(request, 'Incorrect email or password.')
     return render(request, 'register.html')
 
-from .models import AnalysisCT, AnalysisSkin, Analysis  # Модели для разных типов анализов
+from .models import AnalysisCT, AnalysisSkin, Analysis  
 from django.core import serializers
 def user_kab(request):
     """Показать личный кабинет с разным контентом в зависимости от выбранного раздела."""
-    selected_section = request.GET.get('section', 'ct')  # Получаем выбранный раздел, по умолчанию "Анализ КТ снимков"
+    selected_section = request.GET.get('section', 'ct')  
 
     context = {
         'user': request.user,
@@ -48,13 +48,13 @@ def user_kab(request):
             'analyses': analyses,
         })
     elif selected_section == 'xray':
-        analyses = Analysis.objects.filter(user=request.user).order_by('-id')  # Рентген анализы
+        analyses = Analysis.objects.filter(user=request.user).order_by('-id')  
         context.update({
             'section_title': 'Analysis of X-ray images',
             'analyses': analyses,
         })
     elif selected_section == 'skin':
-        analyses = AnalysisSkin.objects.filter(user=request.user).order_by('-id')  # Анализы кожи
+        analyses = AnalysisSkin.objects.filter(user=request.user).order_by('-id')  
         context.update({
             'section_title': 'Skin analysis',
             'analyses': analyses,

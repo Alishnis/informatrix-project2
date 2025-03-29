@@ -17,11 +17,11 @@
     <h1 style="text-align: center; color: #333;">Welcome, {{ user.username }}!</h1>
 
     <!-- Навигация по разделам -->
-    <div style="margin-top: 20px; text-align: center;">
-        <a href="?section=ct" style="padding: 10px 20px; margin: 5px; background: #007bff; color: #fff; border-radius: 5px; text-decoration: none;">Analysis of CT images</a>
-        <a href="?section=xray" style="padding: 10px 20px; margin: 5px; background: #007bff; color: #fff; border-radius: 5px; text-decoration: none;">Analysis of X-ray images</a>
-        <a href="?section=skin" style="padding: 10px 20px; margin: 5px; background: #007bff; color: #fff; border-radius: 5px; text-decoration: none;">Skin analysis</a>
-        <a href="?section=blood" style="padding: 10px 20px; margin: 5px; background: #007bff; color: #fff; border-radius: 5px; text-decoration: none;">Blood analysis</a> <!-- Новый раздел -->
+    <div class="categories" style="margin-top: 20px; text-align: center;">
+        <a href="?section=ct" style="background-color:#88C8E8; color: black; padding: 14px 15px; font-size: 18px; border-radius: 40px; transition: background 0.3s ease, transform 0.2s ease;">Analysis of CT images</a>
+        <a href="?section=xray" style="background-color:#88C8E8; color: black; padding: 14px 15px; font-size: 18px; border-radius: 40px; transition: background 0.3s ease, transform 0.2s ease;">Analysis of X-ray images</a>
+        <a href="?section=skin" style="background-color:#88C8E8; color: black; padding: 14px 15px; font-size: 18px; border-radius: 40px; transition: background 0.3s ease, transform 0.2s ease;">Skin analysis</a>
+        <a href="?section=blood" style="background-color:#88C8E8; color: black; padding: 14px 15px; font-size: 18px; border-radius: 40px; transition: background 0.3s ease, transform 0.2s ease;">Blood analysis</a> <!-- Новый раздел -->
     </div>
 
     <h2 style="text-align: center; margin-top: 30px;">{{ section_title }}</h2>
@@ -34,7 +34,7 @@
                     <li style="padding: 10px; border-bottom: 1px solid #eee;">
                         <p style="margin: 0;"><strong>Analysis Name:</strong> {{ analysis.name }}</p>
                         <p style="margin: 5px 0 0; color: #777;"><strong>Upload Date:</strong> {{ analysis.uploaded_at|date:"d M Y, H:i" }}</p>
-                        <p style="margin: 5px 0 0; color: #777;"><strong><a href="{{ analysis.analysis_file.url }}" target='_blank'>Analysis File </a></strong></p>
+                        <p style="margin: 5px 0 0; color: #777;"><strong><a style="color: #25a2e0;;" href="{{ analysis.analysis_file.url }}" target='_blank'>Analysis File </a></strong></p>
                         <p style="margin: 5px 0 0; color: #777;"><strong>Analysis Result:</strong> {{ analysis.result }}</p>
                     </li>
                 {% endfor %}
@@ -45,4 +45,28 @@
     </div>
 </div>
 </div>
+<style>
+    .categories a {
+        padding: 10px 15px;
+        font-size: 16px;
+        font-weight: bold;
+        text-decoration: none;
+        color: #fff;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .categories a:hover {
+        background-color: #0056b3;
+        transform: scale(1.05);
+    }
+
+    .categories a:focus {
+        outline: none;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+</style>
 {% endblock %}
