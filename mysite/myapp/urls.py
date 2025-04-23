@@ -1,7 +1,8 @@
 from django.urls import path
-from . import views,auth_views,views2
+from . import views,auth_views,views2,views3
 from django.conf import settings
 from django.conf.urls.static import static
+
 
 urlpatterns = [
     path('analysis/', views.analysis_page, name='analysis_page'),
@@ -25,6 +26,10 @@ urlpatterns = [
     path('get_analysis_details/<int:analysis_id>/', views2.get_analysis_details, name='get_analysis_details'),
 
     path('blood_analysis_results/<str:parameter>/', views2.show_graph, name='show_graph'),
+    
+    path('api/analyze-symptoms/', views3.SymptomAnalysisView.as_view(), name='symptom-analysis'),
+    path('api/analyze-image/', views.ImageAnalysisView.as_view(), name='analyze-image'),
+
   
     
     

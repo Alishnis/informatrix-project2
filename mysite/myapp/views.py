@@ -328,6 +328,55 @@ def analyze_image(request):
 
     return render(request, 'upload.html')
 from .models import AnalysisCT
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import ImageUploadSerializer
+class ImageAnalysisView(APIView):
+    def post(self, request):
+        serializer = ImageUploadSerializer(data=request.data)
+        if serializer.is_valid():
+            uploaded_file = request.FILES['file']
+            temp_image_path = os.path.join('temp', uploaded_file.name)
+
+            # Сохраняем файл
+            with open(temp_image_path, 'wb+') as destination:
+                for chunk in uploaded_file.chunks():
+                    destination.write(chunk)
+
+            # Загружаем изображение
+            img = Image.open(temp_image_path).convert("RGB")
+            img = preprocess(img)
+            img = img.unsqueeze(0)  # Добавляем batch размер
+
+            # Прогоняем изображение через модель
+            with torch.no_grad():
+                outputs = model(img)
+                probabilities = torch.nn.functional.softmax(outputs[0], dim=0)
+                _, predicted_idx = torch.max(probabilities, dim=0)
+
+            # Список классов
+            classes = [
+                "Atelectasis", "Cardiomegaly", "Effusion", "Infiltration", "Mass",
+                "Nodule", "Pneumonia", "Pneumothorax", "Consolidation", "Edema",
+                "Emphysema", "Fibrosis", "Pleural Thickening", "Hernia"
+            ]
+
+            # Результат
+            result = classes[predicted_idx]
+            analysis = Analysis.objects.create(
+                user=request.user,
+                analysis_file=uploaded_file.name,
+                result=result,
+            )
+
+            os.remove(temp_image_path)  # Удаляем временный файл
+
+            return Response({
+                'result': result,
+                'analysis_id': analysis.id
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 def save_results(request):
     """Подтверждение сохранения анализа."""
@@ -434,9 +483,9 @@ def get_class_labels(train_generator):
     return {v: k for k, v in train_generator.class_indices.items()}
 
 CLASS_TRANSLATIONS = {
-    "large.cell.carcinoma_left.hilum_T2_N2_M0_IIIa": "Большеклеточная карцинома",
-    "adenocarcinoma": "Аденокарцинома",
-    "squamous.cell.carcinoma": "Плоскоклеточная карцинома",
+    "Large Cell Carcinoma": "Большеклеточная карцинома",
+    "Adenocarcinoma": "Аденокарцинома",
+    "Squamous Cell Carcinoma": "Плоскоклеточная карцинома",
     "normal": "Нормальное состояние",
 }
 

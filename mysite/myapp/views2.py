@@ -46,6 +46,25 @@ def generate_gradcam(model, input_tensor, target_layer, predicted_index):
     grayscale_cam = grayscale_cam[0, :]  
     
     return grayscale_cam
+import os
+import numpy as np
+import torch
+import torchvision.transforms as transforms
+from PIL import Image
+from pytorch_grad_cam import GradCAM
+from pytorch_grad_cam.utils.image import show_cam_on_image
+from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
+
+import os
+import numpy as np
+import torch
+import torchvision.transforms as transforms
+from PIL import Image
+from pytorch_grad_cam import GradCAM
+from pytorch_grad_cam.utils.image import show_cam_on_image
+from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
+
+
 
 
 def analyze_skin_image(request):
@@ -242,7 +261,7 @@ def get_recommendations(parameter, level):
             },
         },
         'erythrocytes': {
-            'normal': (4.5, 5.9), 
+            'normal': (4.5, 4.6), 
             'low': {
                 'message': "Your erythrocyte count is low, which could indicate anemia. You may need to increase iron-rich foods in your diet or take iron supplements.",
                 'solution': "To treat low erythrocyte levels, increasing iron intake is essential. This can be done by consuming more red meat, leafy greens, legumes, and fortified cereals. Iron supplements may also be recommended. If the anemia is severe, you may need vitamin B12 or folate supplementation."
