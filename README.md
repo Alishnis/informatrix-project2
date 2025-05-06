@@ -27,7 +27,7 @@ Follow these steps to set up the project:
 ```bash
 git clone https://github.com/Alishnis/informatrix-project2.git
 cd informatrix-project2
-cd mysite
+
 
 2️⃣ Create a Virtual Environment
 
